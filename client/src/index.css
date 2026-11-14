@@ -1,0 +1,88 @@
+@import '@fontsource-variable/source-sans-3';
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource-variable/jetbrains-mono';
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --font-sans: 'Source Sans 3 Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Source Serif 4 Variable', ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --color-paper: #f3f6f5;
+  --color-surface: #ffffff;
+  --color-ink: #17212b;
+  --color-muted: #5b6875;
+  --color-line: #d9e0de;
+  --color-accent: #0f5e73;
+  --color-accent-soft: #e2eff2;
+
+  --color-easy: #1c7449;
+  --color-easy-soft: #e1f2e8;
+  --color-medium: #96590a;
+  --color-medium-soft: #fbeed3;
+  --color-hard: #ab2f2a;
+  --color-hard-soft: #fbe4e2;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-ink placeholder:text-muted/70;
+  }
+  .field:focus {
+    @apply border-accent outline-none ring-2 ring-accent/20;
+  }
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 font-medium text-ink hover:border-muted disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-accent bg-accent text-white hover:border-ink hover:bg-ink;
+  }
+  .btn-danger {
+    @apply text-hard hover:border-hard;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .hint {
+    @apply mt-1 text-sm text-muted;
+  }
+}
+
+/* Notes read like a notebook page: serif, comfortable measure. */
+.notes {
+  @apply prose max-w-[68ch] font-serif text-ink;
+  line-height: 1.7;
+}
+.notes :where(code) {
+  @apply rounded bg-paper px-1 py-0.5 font-mono text-[0.85em] font-normal;
+}
+.notes :where(code)::before,
+.notes :where(code)::after {
+  content: none;
+}
+.notes :where(pre) {
+  @apply border border-line bg-paper text-ink;
+}
+.notes :where(pre code) {
+  @apply bg-transparent p-0;
+}
+.notes :where(a) {
+  @apply text-accent;
+}
+
+dialog::backdrop {
+  background: rgb(23 33 43 / 0.6);
+}
