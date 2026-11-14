@@ -14,7 +14,16 @@ const app = createApp({
 });
 
 // Bound to localhost only: this is a personal tool with no login.
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, '127.0.0.1', (err?: Error) => {
+  if (err) {
+    const inUse = (err as NodeJS.ErrnoException).code === 'EADDRINUSE';
+    console.error(
+      inUse
+        ? `Port ${port} is already in use. Stop the other process, or start with a different port: PORT=3002 npm run dev`
+        : `Could not start the API server: ${err.message}`,
+    );
+    process.exit(1);
+  }
   console.log(`LeetCode Tracker API listening on http://localhost:${port}`);
   console.log(`Data directory: ${dataDir}`);
 });

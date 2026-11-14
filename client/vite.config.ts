@@ -9,6 +9,6 @@ export default defineConfig({
   server: {
     port: 5173,
     // The API runs as a separate process in development.
-    proxy: { '/api': 'http://localhost:3001' },
+    proxy: { '/api': `http://127.0.0.1:${process.env.PORT ?? 3001}` },
   },
 })

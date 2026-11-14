@@ -15,7 +15,7 @@ A local, single-user app for keeping track of the LeetCode problems you have sol
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 or newer (check with `node -v`). Older versions cannot load the SQLite driver.
 
 ## Getting started
 
