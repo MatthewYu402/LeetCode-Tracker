@@ -83,6 +83,13 @@ html {
   @apply text-accent;
 }
 
+/* Long equations scroll sideways instead of overflowing the page. */
+.notes .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.25rem;
+}
+
 dialog::backdrop {
   background: rgb(23 33 43 / 0.6);
 }

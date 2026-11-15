@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router'
 import { api, SORT_OPTIONS, type Difficulty, type ListParams, type Stats, type Tag, type TagKind } from '../api.ts'
 import { DIFFICULTY_LABEL, DifficultyBadge, ErrorNote, PersonalMeter, TagChip } from '../components/bits.tsx'
 import { formatDate, formatRelative } from '../lib/format.ts'
+import { useFillHeight } from '../lib/useFillHeight.ts'
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 
@@ -125,6 +126,9 @@ function TagFilter(props: {
 export default function Dashboard() {
   const { filters, update, active, clear } = useFilters()
   const [searchText, setSearchText] = useState(filters.search)
+  // The list and the filters each fill the rest of the window and scroll on their own.
+  const listRef = useFillHeight<HTMLDivElement>()
+  const filtersRef = useFillHeight<HTMLElement>()
 
   // Debounce typing so each keystroke does not hit the API.
   useEffect(() => {
@@ -165,7 +169,7 @@ export default function Dashboard() {
       <ErrorNote error={problems.error ?? tags.error ?? stats.error} />
 
       <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside aria-label="Filters" className="space-y-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
+        <aside ref={filtersRef} aria-label="Filters" className="space-y-5 lg:max-h-(--fill-height) lg:self-start lg:overflow-y-auto lg:pr-1">
           <fieldset>
             <legend className="mb-1.5 font-semibold">Difficulty</legend>
             <div className="flex gap-1.5">
@@ -259,10 +263,16 @@ export default function Dashboard() {
           </p>
 
           {rows.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+            <div
+              ref={listRef}
+              tabIndex={0}
+              role="region"
+              aria-label="Problems"
+              className="overflow-auto rounded-lg lg:max-h-(--fill-height) border border-line bg-surface"
+            >
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-line text-sm text-muted">
+                  <tr className="text-sm text-muted [&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-surface [&>th]:shadow-[inset_0_-1px_0_var(--color-line)]">
                     <th scope="col" className="px-3 py-2 font-semibold">Problem</th>
                     <th scope="col" className="px-3 py-2 font-semibold">Difficulty</th>
                     <th scope="col" className="px-3 py-2 font-semibold">For me</th>

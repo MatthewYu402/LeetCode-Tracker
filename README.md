@@ -6,11 +6,11 @@ A local, single-user app for keeping track of the LeetCode problems you have sol
 
 - **Add problems** from LeetCode or your own. Paste a LeetCode link and the title is filled in from the URL.
 - **Two difficulty ratings**: the official Easy / Medium / Hard label, and your own 1 to 5 rating of how hard it felt.
-- **Notes in Markdown**: a summary, how you solved it, and why it works, plus time and space complexity.
+- **Notes in Markdown and LaTeX**: a summary, how you solved it, and why it works, plus time and space complexity. Write math as `$O(n \log n)$` inline, or between `$$` lines for a centred equation, and use Preview in the form to check it. Write `\$` for a literal dollar sign.
 - **Code** with syntax highlighting, and several solutions per problem (for example brute force next to optimal).
 - **Handwritten notes**: upload PDFs to a problem and open them in a viewer from the problem page.
 - **Patterns and data structures** as tags (Sliding Window, Dynamic Programming, Heap, and so on). A starter set is created for you and you can add your own.
-- **Dashboard** with filters for difficulty, pattern, data structure, and "needs revisit", text search across titles and notes, and sorting by date, difficulty, your own rating, or time since last review.
+- **Dashboard** that fits one screen, with the problem list scrolling in place, and filters for difficulty, pattern, data structure, and "needs revisit", text search across titles and notes, and sorting by date, difficulty, your own rating, or time since last review.
 - **Review tracking**: a "needs revisit" flag, last reviewed date, and review count.
 
 ## Requirements
@@ -57,7 +57,7 @@ The server only listens on `127.0.0.1` and has no login. It is meant to run on y
 
 ## Tech stack
 
-- **Client**: React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS, CodeMirror, react-markdown
+- **Client**: React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS, CodeMirror, react-markdown, KaTeX
 - **Server**: Node.js, Express, TypeScript, Zod
 - **Database**: SQLite through better-sqlite3 and Drizzle ORM
 
