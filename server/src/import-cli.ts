@@ -1,15 +1,16 @@
 import path from 'node:path';
 import { openDb } from './db/client.js';
 import { importProblems } from './import.js';
-import { dbFile, serverRoot } from './paths.js';
+import { dbFile } from './paths.js';
 
-// Usage: npm run import [-- path/to/problems.json]
-// With no path, imports the starter set of written-up problems that ships with the repo.
-// npm runs workspace scripts from server/, so resolve a given path against where the user ran the command.
+// Usage: npm run import -- path/to/problems.json
+// npm runs workspace scripts from server/, so resolve the path against where the user ran the command.
 const given = process.argv[2];
-const file = given
-  ? path.resolve(process.env.INIT_CWD ?? process.cwd(), given)
-  : path.join(serverRoot, 'seed', 'starter-problems.json');
+if (!given) {
+  console.error('Give the JSON file to import: npm run import -- path/to/problems.json');
+  process.exit(1);
+}
+const file = path.resolve(process.env.INIT_CWD ?? process.cwd(), given);
 
 try {
   const { added, skipped } = importProblems(openDb(dbFile), file);

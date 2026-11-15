@@ -35,21 +35,35 @@ npm start
 
 Then open http://localhost:3001.
 
-## Starter problems
+## Importing problems
 
-The repo ships with write-ups for 22 problems from the Arrays and Hashing, Two Pointers, Stack, and Binary Search groups: a summary, the approach, why it works, complexity, tags, and a tested Python solution for each. To add them to your tracker:
-
-```bash
-npm run import
-```
-
-Problems already in your tracker (matched by link) are skipped and never overwritten, so it is safe to run more than once. The personal difficulty rating and solved date are left empty for you to fill in.
-
-To import your own file in the same format as `server/seed/starter-problems.json`:
+To add problems in bulk, write them in a JSON file and run:
 
 ```bash
 npm run import -- path/to/problems.json
 ```
+
+The file is a list of problems. Only `title` and `officialDifficulty` are required:
+
+```json
+[
+  {
+    "title": "Two Sum",
+    "url": "https://leetcode.com/problems/two-sum/",
+    "leetcodeNumber": 1,
+    "officialDifficulty": "easy",
+    "tags": ["Array", "Hash Map"],
+    "summary": "...",
+    "approachNotes": "...",
+    "whyItWorks": "...",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "solutions": [{ "label": "Optimal", "language": "python", "code": "..." }]
+  }
+]
+```
+
+Problems already in your tracker (matched by link, or by title when there is no link) are skipped and never overwritten, so it is safe to run more than once. Keep your own import files outside the repo, or in `server/data/`, so they are not committed.
 
 ## Scripts
 
@@ -58,7 +72,7 @@ npm run import -- path/to/problems.json
 | `npm run dev` | Starts the API and the client with hot reload |
 | `npm run build` | Builds the client and compiles the server |
 | `npm start` | Serves the built app from the API server |
-| `npm run import` | Adds the starter problems, or the problems in a JSON file you pass |
+| `npm run import -- file.json` | Adds the problems in a JSON file to your tracker |
 | `npm test` | Runs the server and client tests |
 | `npm run typecheck` | Type-checks both packages |
 | `npm run db:generate` | Generates a migration after you change `server/src/db/schema.ts` |
@@ -91,7 +105,6 @@ server/
   src/routes/           problems, tags, attachments, stats
   src/api.test.ts       API tests
   src/import.ts         Problem import used by `npm run import`
-  seed/                 Starter problem write-ups
   drizzle/              SQL migrations, applied automatically on start
 ```
 
