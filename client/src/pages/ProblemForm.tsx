@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { api, type Difficulty, type Problem, type ProblemInput, type Source, type Tag, type TagKind } from '../api.ts'
 import { DIFFICULTY_LABEL, ErrorNote } from '../components/bits.tsx'
 import CodeEditor from '../components/CodeEditor.tsx'
+import NotesField from '../components/NotesField.tsx'
 import { formatBytes, LANGUAGES, PERSONAL_LABELS, todayLocal } from '../lib/format.ts'
 import { parseLeetCodeUrl } from '../lib/leetcode.ts'
 
@@ -374,19 +375,15 @@ export default function ProblemForm() {
 
       <section className="space-y-4">
         <h2 className="border-b border-line pb-1 text-lg font-bold">Notes</h2>
-        <p className="text-muted">Markdown works in all three: lists, **bold**, `inline code`, and fenced code blocks.</p>
-        <div>
-          <label htmlFor="summary" className="label">Summary</label>
-          <textarea id="summary" rows={3} className="field" value={form.summary} onChange={(e) => set('summary', e.target.value)} placeholder="What the problem asks, in your own words." />
-        </div>
-        <div>
-          <label htmlFor="approach" className="label">How I solved it</label>
-          <textarea id="approach" rows={7} className="field" value={form.approachNotes} onChange={(e) => set('approachNotes', e.target.value)} placeholder="The steps you took, what you tried first, where you got stuck." />
-        </div>
-        <div>
-          <label htmlFor="why" className="label">Why it works</label>
-          <textarea id="why" rows={7} className="field" value={form.whyItWorks} onChange={(e) => set('whyItWorks', e.target.value)} placeholder="The invariant or insight that makes this approach correct, and what in the problem signals this pattern." />
-        </div>
+        <p className="text-muted">
+          Markdown and LaTeX work in all three. Write inline math between single dollar signs, such as{' '}
+          <code className="font-mono text-[0.85em] text-ink">$O(n \log n)$</code>. For a centred equation, put{' '}
+          <code className="font-mono text-[0.85em] text-ink">$$</code> on the line before it and the line after it. For a
+          literal dollar sign, write <code className="font-mono text-[0.85em] text-ink">\$</code>.
+        </p>
+        <NotesField id="summary" label="Summary" rows={3} value={form.summary} onChange={(v) => set('summary', v)} placeholder="What the problem asks, in your own words." />
+        <NotesField id="approach" label="How I solved it" rows={7} value={form.approachNotes} onChange={(v) => set('approachNotes', v)} placeholder="The steps you took, what you tried first, where you got stuck." />
+        <NotesField id="why" label="Why it works" rows={7} value={form.whyItWorks} onChange={(v) => set('whyItWorks', v)} placeholder="The invariant or insight that makes this approach correct, and what in the problem signals this pattern." />
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="time" className="label">Time complexity</label>
