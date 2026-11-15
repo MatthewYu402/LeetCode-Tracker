@@ -1,15 +1,13 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { openDb } from './db/client.js';
+import { dataDir, dbFile, serverRoot, uploadsDir } from './paths.js';
 
-const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(serverRoot, 'data');
 const port = Number(process.env.PORT ?? 3001);
 
 const app = createApp({
-  db: openDb(path.join(dataDir, 'tracker.db')),
-  uploadsDir: path.join(dataDir, 'uploads'),
+  db: openDb(dbFile),
+  uploadsDir,
   clientDir: path.resolve(serverRoot, '../client/dist'),
 });
 
