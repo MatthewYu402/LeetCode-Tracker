@@ -2,6 +2,8 @@
 
 A local, single-user app for keeping track of the LeetCode problems you have solved: what the problem asks, how you solved it, why that approach works, the code, and which patterns and data structures it exercises. Everything is stored on your own machine in a SQLite file.
 
+<img width="1622" height="1283" alt="lct1" src="https://github.com/user-attachments/assets/e253e84d-55c8-4a24-98e4-de82edd75287" />
+
 ## Features
 
 - **Add problems** from LeetCode or your own. Paste a LeetCode link and the title is filled in from the URL.
