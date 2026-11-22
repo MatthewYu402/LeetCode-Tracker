@@ -9,3 +9,5 @@ server/data/
 .env.*
 .DS_Store
 *.log
+
+self.txt

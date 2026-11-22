@@ -82,3 +82,10 @@ export const listQuerySchema = z.object({
   search: z.string().trim().max(200).optional(),
   sort: z.enum(SORTS).default('newest'),
 });
+
+const nameField = (what: string, max: number) => z.string().trim().min(1, `${what} is required`).max(max);
+
+export const checklistSchema = z.object({ name: nameField('Name', 100) });
+export const categorySchema = z.object({ name: nameField('Name', 100) });
+export const createItemSchema = z.object({ title: nameField('Title', 300) });
+export const updateItemSchema = z.object({ title: nameField('Title', 300), done: z.boolean() }).partial();

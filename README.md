@@ -14,6 +14,7 @@ A local, single-user app for keeping track of the LeetCode problems you have sol
 - **Patterns and data structures** as tags (Sliding Window, Dynamic Programming, Heap, and so on). A starter set is created for you and you can add your own.
 - **Dashboard** that fits one screen, with the problem list scrolling in place, and filters for difficulty, pattern, data structure, and "needs revisit", text search across titles and notes, and sorting by date, difficulty, your own rating, or time since last review.
 - **Review tracking**: a "needs revisit" flag, last reviewed date, and review count.
+- **Checklists** of problems to work through, grouped by topic, with progress per topic and overall. The NeetCode 150 is set up for you. Add your own lists, topics, and problems, or rename and remove them. A checklist problem with the same title as one you have written up links to your notes, and one without a write-up has a button that starts one with the title filled in.
 
 ## Requirements
 
@@ -67,12 +68,13 @@ The server only listens on `127.0.0.1` and has no login. It is meant to run on y
 
 ```
 client/                 React app
-  src/pages/            Dashboard, problem page, add/edit form
+  src/pages/            Dashboard, problem page, add/edit form, checklists
   src/components/       Code editor, Markdown, PDF viewer, small UI pieces
   src/lib/leetcode.ts   LeetCode URL to title parsing
   src/api.ts            Typed API client
 server/
-  src/db/schema.ts      Tables: problems, solutions, tags, problem_tags, attachments
+  src/db/schema.ts      Tables: problems, solutions, tags, problem_tags, attachments, checklists
+  src/db/neetcode150.ts The starter checklist
   src/routes/           problems, tags, attachments, stats
   src/api.test.ts       API tests
   drizzle/              SQL migrations, applied automatically on start
@@ -95,6 +97,12 @@ All routes are under `/api`.
 | `DELETE /attachments/:id` | Remove a PDF |
 | `GET /tags`, `POST /tags`, `DELETE /tags/:id` | Manage tags |
 | `GET /stats` | Counts for the dashboard |
+| `GET /checklists`, `POST /checklists` | All lists with their topics and problems; create a list |
+| `PATCH /checklists/:id`, `DELETE /checklists/:id` | Rename or delete a list |
+| `POST /checklists/:id/categories` | Add a topic to a list |
+| `PATCH /checklists/categories/:id`, `DELETE /checklists/categories/:id` | Rename or delete a topic |
+| `POST /checklists/categories/:id/items` | Add a problem to a topic |
+| `PATCH /checklists/items/:id`, `DELETE /checklists/items/:id` | Tick off, rename, or remove a problem |
 
 ## License
 

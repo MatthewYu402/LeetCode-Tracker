@@ -82,3 +82,41 @@ export const attachments = sqliteTable(
   },
   (t) => [index('attachments_problem_idx').on(t.problemId)],
 );
+
+/** A named problem list, such as "NeetCode 150", that you work through and tick off. */
+export const checklists = sqliteTable('checklists', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull().unique(),
+  position: integer('position').notNull().default(0),
+  createdAt: text('created_at').notNull(),
+});
+
+/** A topic within a checklist, such as "Two Pointers". */
+export const checklistCategories = sqliteTable(
+  'checklist_categories',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    checklistId: integer('checklist_id')
+      .notNull()
+      .references(() => checklists.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    position: integer('position').notNull().default(0),
+  },
+  (t) => [index('checklist_categories_checklist_idx').on(t.checklistId)],
+);
+
+export const checklistItems = sqliteTable(
+  'checklist_items',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    categoryId: integer('category_id')
+      .notNull()
+      .references(() => checklistCategories.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    done: integer('done', { mode: 'boolean' }).notNull().default(false),
+    /** When it was last ticked off; null while not done. */
+    doneAt: text('done_at'),
+    position: integer('position').notNull().default(0),
+  },
+  (t) => [index('checklist_items_category_idx').on(t.categoryId)],
+);

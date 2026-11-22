@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { api, type Difficulty, type Problem, type ProblemInput, type Source, type Tag, type TagKind } from '../api.ts'
 import { DIFFICULTY_LABEL, ErrorNote } from '../components/bits.tsx'
 import CodeEditor from '../components/CodeEditor.tsx'
@@ -155,7 +155,9 @@ export default function ProblemForm() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [form, setForm] = useState<FormState>(emptyForm)
+  const [searchParams] = useSearchParams()
+  // A checklist entry can open this form with its title already filled in.
+  const [form, setForm] = useState<FormState>(() => ({ ...emptyForm(), title: searchParams.get('title') ?? '' }))
   const [loaded, setLoaded] = useState(editId === null)
   /** True while the title is one we generated from the URL, so a new URL may replace it. */
   const [titleIsAuto, setTitleIsAuto] = useState(editId === null)

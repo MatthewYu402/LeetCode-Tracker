@@ -78,6 +78,29 @@ export interface Stats {
   neverReviewed: number
 }
 
+export interface ChecklistItem {
+  id: number
+  categoryId: number
+  title: string
+  done: boolean
+  doneAt: string | null
+  /** The tracked problem with the same title, if you have written one up. */
+  problemId: number | null
+}
+
+export interface ChecklistCategory {
+  id: number
+  checklistId: number
+  name: string
+  items: ChecklistItem[]
+}
+
+export interface Checklist {
+  id: number
+  name: string
+  categories: ChecklistCategory[]
+}
+
 export const SORT_OPTIONS = [
   ['newest', 'Newest first'],
   ['oldest', 'Oldest first'],
@@ -138,6 +161,21 @@ export const api = {
   createTag: (name: string, kind: TagKind) => request<Required<Tag>>('/tags', json('POST', { name, kind })),
 
   getStats: () => request<Stats>('/stats'),
+
+  listChecklists: () => request<Checklist[]>('/checklists'),
+  createChecklist: (name: string) => request<Checklist>('/checklists', json('POST', { name })),
+  renameChecklist: (id: number, name: string) => request<Checklist>(`/checklists/${id}`, json('PATCH', { name })),
+  deleteChecklist: (id: number) => request<void>(`/checklists/${id}`, { method: 'DELETE' }),
+  createCategory: (checklistId: number, name: string) =>
+    request<ChecklistCategory>(`/checklists/${checklistId}/categories`, json('POST', { name })),
+  renameCategory: (id: number, name: string) =>
+    request<ChecklistCategory>(`/checklists/categories/${id}`, json('PATCH', { name })),
+  deleteCategory: (id: number) => request<void>(`/checklists/categories/${id}`, { method: 'DELETE' }),
+  createItem: (categoryId: number, title: string) =>
+    request<ChecklistItem>(`/checklists/categories/${categoryId}/items`, json('POST', { title })),
+  updateItem: (id: number, patch: { title?: string; done?: boolean }) =>
+    request<ChecklistItem>(`/checklists/items/${id}`, json('PATCH', patch)),
+  deleteItem: (id: number) => request<void>(`/checklists/items/${id}`, { method: 'DELETE' }),
 
   uploadPdf(problemId: number, file: File) {
     const form = new FormData()

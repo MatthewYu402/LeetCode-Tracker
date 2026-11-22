@@ -6,6 +6,7 @@ import { ZodError } from 'zod';
 import type { Db } from './db/client.js';
 import { HttpError } from './errors.js';
 import { attachmentsRouter, MAX_PDF_BYTES } from './routes/attachments.js';
+import { checklistsRouter } from './routes/checklists.js';
 import { problemsRouter } from './routes/problems.js';
 import { statsRouter } from './routes/stats.js';
 import { tagsRouter } from './routes/tags.js';
@@ -26,6 +27,7 @@ export function createApp({ db, uploadsDir, clientDir }: AppOptions) {
   app.use('/api/problems', problemsRouter(db, uploadsDir));
   app.use('/api/tags', tagsRouter(db));
   app.use('/api/stats', statsRouter(db));
+  app.use('/api/checklists', checklistsRouter(db));
   app.use('/api', attachmentsRouter(db, uploadsDir));
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found' });

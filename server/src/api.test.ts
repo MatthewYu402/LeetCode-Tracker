@@ -207,3 +207,58 @@ describe('PDF attachments', () => {
     expect(fs.readdirSync(uploadsDir)).toHaveLength(0);
   });
 });
+
+describe('checklists', () => {
+  const lists = async () => (await request(app).get('/api/checklists')).body;
+
+  it('seeds the NeetCode 150 with its topics in order and the starting progress', async () => {
+    const [list] = await lists();
+    expect(list.name).toBe('NeetCode 150');
+    expect(list.categories[0].name).toBe('Arrays and Hashing');
+    expect(list.categories.at(-1).name).toBe('Math & Geometry');
+    const items = list.categories.flatMap((c: { items: unknown[] }) => c.items);
+    expect(items).toHaveLength(148);
+    const encode = items.find((i: { title: string }) => i.title === 'Encode and Decode Strings');
+    const twoSum = items.find((i: { title: string }) => i.title === 'Two Sum');
+    expect(encode.done).toBe(false);
+    expect(twoSum.done).toBe(true);
+  });
+
+  it('adds lists, topics, and problems, and ticks problems off', async () => {
+    const list = await request(app).post('/api/checklists').send({ name: 'Blind 75' });
+    expect(list.status).toBe(201);
+    expect((await request(app).post('/api/checklists').send({ name: 'blind 75' })).status).toBe(409);
+
+    const topic = await request(app).post(`/api/checklists/${list.body.id}/categories`).send({ name: 'Arrays' });
+    expect(topic.status).toBe(201);
+    const first = await request(app).post(`/api/checklists/categories/${topic.body.id}/items`).send({ title: 'Two Sum' });
+    const second = await request(app).post(`/api/checklists/categories/${topic.body.id}/items`).send({ title: 'Contains Duplicate' });
+    expect(second.body.position).toBe(first.body.position + 1);
+    expect((await request(app).post(`/api/checklists/categories/${topic.body.id}/items`).send({ title: ' ' })).status).toBe(400);
+
+    const ticked = await request(app).patch(`/api/checklists/items/${first.body.id}`).send({ done: true });
+    expect(ticked.body.done).toBe(true);
+    expect(ticked.body.doneAt).not.toBeNull();
+    const unticked = await request(app).patch(`/api/checklists/items/${first.body.id}`).send({ done: false });
+    expect(unticked.body.doneAt).toBeNull();
+
+    const blind = (await lists()).find((l: { name: string }) => l.name === 'Blind 75');
+    expect(blind.categories[0].items.map((i: { title: string }) => i.title)).toEqual(['Two Sum', 'Contains Duplicate']);
+  });
+
+  it('links a checklist problem to the tracked problem with the same title, ignoring punctuation', async () => {
+    const tracked = await create({ title: 'Two Sum II - Input Array Is Sorted', officialDifficulty: 'medium' });
+    const items = (await lists())[0].categories.flatMap((c: { items: unknown[] }) => c.items);
+    const item = items.find((i: { title: string }) => i.title === 'Two Sum II Input Array Is Sorted');
+    expect(item.problemId).toBe(tracked.body.id);
+    expect(items.find((i: { title: string }) => i.title === 'Valid Anagram').problemId).toBeNull();
+  });
+
+  it('deleting a list removes its topics and problems', async () => {
+    const [list] = await lists();
+    expect((await request(app).delete(`/api/checklists/${list.id}`)).status).toBe(204);
+    expect(await lists()).toEqual([]);
+    const topicId = list.categories[0].id;
+    expect((await request(app).post(`/api/checklists/categories/${topicId}/items`).send({ title: 'X' })).status).toBe(404);
+  });
+});
