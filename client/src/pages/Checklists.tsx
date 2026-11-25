@@ -5,6 +5,7 @@ import { api, type Checklist, type ChecklistCategory, type ChecklistItem } from 
 import { ErrorNote } from '../components/bits.tsx'
 
 const HIDE_DONE_KEY = 'leetcode-tracker:checklist-hide-done'
+const COLLAPSED_KEY = 'leetcode-tracker:checklist-collapsed'
 const QUERY_KEY = ['checklists']
 
 const countDone = (items: ChecklistItem[]) => items.filter((i) => i.done).length
@@ -15,6 +16,24 @@ function readHideDone() {
     return localStorage.getItem(HIDE_DONE_KEY) === 'true'
   } catch {
     return false
+  }
+}
+
+/** Ids of the topics the viewer has folded shut, remembered across visits. */
+function readCollapsed(): Set<number> {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]')
+    return new Set(Array.isArray(parsed) ? parsed.filter((n): n is number => typeof n === 'number') : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function writeCollapsed(ids: Set<number>) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...ids]))
+  } catch {
+    // Remembering this is a convenience only.
   }
 }
 
@@ -188,9 +207,11 @@ function CategoryCard(props: {
   category: ChecklistCategory
   hideDone: boolean
   editMode: boolean
+  collapsed: boolean
+  onToggleCollapsed: () => void
   onToggle: (item: ChecklistItem) => void
 }) {
-  const { category } = props
+  const { category, collapsed } = props
   const [renaming, setRenaming] = useState(false)
   const [adding, setAdding] = useState(false)
   const rename = useChecklistMutation((name: string) => api.renameCategory(category.id, name))
@@ -217,7 +238,25 @@ function CategoryCard(props: {
         />
       ) : (
         <div className="group flex items-baseline gap-2">
-          <h2 className="min-w-0 flex-1 font-bold">{category.name}</h2>
+          <h2 className="min-w-0 flex-1 font-bold">
+            <button
+              type="button"
+              className="flex w-full cursor-pointer items-baseline gap-1.5 text-left hover:text-accent"
+              aria-expanded={!collapsed}
+              aria-controls={`category-${category.id}-body`}
+              onClick={props.onToggleCollapsed}
+              title={collapsed ? 'Show problems' : 'Hide problems'}
+            >
+              <svg
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+                className={`size-3 shrink-0 self-center text-muted transition-transform ${collapsed ? '-rotate-90' : ''}`}
+              >
+                <path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="min-w-0">{category.name}</span>
+            </button>
+          </h2>
           <span className={`${editControls(props.editMode)} gap-0.5`}>
             <button type="button" className={quietButton} onClick={() => setRenaming(true)} aria-label={`Rename topic ${category.name}`}>
               Rename
@@ -239,34 +278,36 @@ function CategoryCard(props: {
           </span>
         </div>
       )}
-      <div className="mt-2 mb-2">
+      <div className={collapsed ? 'mt-2' : 'mt-2 mb-2'}>
         <ProgressBar done={done} total={total} label={`${category.name}: ${done} of ${total} done`} />
       </div>
 
-      {shown.length > 0 && (
-        <ul>
-          {shown.map((item) => (
-            <ItemRow key={item.id} item={item} editMode={props.editMode} onToggle={props.onToggle} />
-          ))}
-        </ul>
-      )}
-      {props.hideDone && total > 0 && shown.length === 0 && <p className="px-1 py-1 text-sm text-easy">All done.</p>}
-      {total === 0 && <p className="px-1 py-1 text-sm text-muted">No problems yet.</p>}
-
-      <div className="mt-1.5">
-        {adding ? (
-          <NameForm
-            placeholder="Problem title"
-            label={`New problem in ${category.name}`}
-            submitLabel="Add"
-            onSubmit={(title) => add.mutateAsync(title)}
-            onCancel={() => setAdding(false)}
-          />
-        ) : (
-          <button type="button" className="cursor-pointer px-1 text-sm font-medium text-accent hover:underline" onClick={() => setAdding(true)}>
-            + Add problem
-          </button>
+      <div id={`category-${category.id}-body`} hidden={collapsed}>
+        {shown.length > 0 && (
+          <ul>
+            {shown.map((item) => (
+              <ItemRow key={item.id} item={item} editMode={props.editMode} onToggle={props.onToggle} />
+            ))}
+          </ul>
         )}
+        {props.hideDone && total > 0 && shown.length === 0 && <p className="px-1 py-1 text-sm text-easy">All done.</p>}
+        {total === 0 && <p className="px-1 py-1 text-sm text-muted">No problems yet.</p>}
+
+        <div className="mt-1.5">
+          {adding ? (
+            <NameForm
+              placeholder="Problem title"
+              label={`New problem in ${category.name}`}
+              submitLabel="Add"
+              onSubmit={(title) => add.mutateAsync(title)}
+              onCancel={() => setAdding(false)}
+            />
+          ) : (
+            <button type="button" className="cursor-pointer px-1 text-sm font-medium text-accent hover:underline" onClick={() => setAdding(true)}>
+              + Add problem
+            </button>
+          )}
+        </div>
       </div>
     </section>
   )
@@ -277,6 +318,7 @@ export default function Checklists() {
   const [params, setParams] = useSearchParams()
   const [hideDone, setHideDone] = useState(readHideDone)
   const [editMode, setEditMode] = useState(false)
+  const [collapsed, setCollapsedState] = useState(readCollapsed)
   const [creatingList, setCreatingList] = useState(false)
   const [renamingList, setRenamingList] = useState(false)
 
@@ -319,6 +361,17 @@ export default function Checklists() {
     }
   }
 
+  const setCollapsed = (next: Set<number>) => {
+    setCollapsedState(next)
+    writeCollapsed(next)
+  }
+
+  const toggleCollapsed = (id: number) => {
+    const next = new Set(collapsed)
+    if (!next.delete(id)) next.add(id)
+    setCollapsed(next)
+  }
+
   const selectList = (id: number) => {
     setRenamingList(false)
     setParams({ list: String(id) }, { replace: true })
@@ -358,6 +411,16 @@ export default function Checklists() {
   const items = allItems(current)
   const done = countDone(items)
   const pct = items.length ? Math.round((done / items.length) * 100) : 0
+  const categoryIds = current.categories.map((c) => c.id)
+  const allCollapsed = categoryIds.length > 0 && categoryIds.every((id) => collapsed.has(id))
+  const setAllCollapsed = (shut: boolean) => {
+    const next = new Set(collapsed)
+    for (const id of categoryIds) {
+      if (shut) next.add(id)
+      else next.delete(id)
+    }
+    setCollapsed(next)
+  }
 
   return (
     <div className="space-y-6">
@@ -425,6 +488,11 @@ export default function Checklists() {
                 <input type="checkbox" className="accent-accent" checked={editMode} onChange={(e) => setEditMode(e.target.checked)} />
                 <span>Edit</span>
               </label>
+              {categoryIds.length > 0 && (
+                <button type="button" className={quietButton} onClick={() => setAllCollapsed(!allCollapsed)}>
+                  {allCollapsed ? 'Expand all' : 'Collapse all'}
+                </button>
+              )}
               <button type="button" className={quietButton} onClick={() => setRenamingList(true)}>
                 Rename list
               </button>
@@ -449,7 +517,15 @@ export default function Checklists() {
 
       <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
         {current.categories.map((c) => (
-          <CategoryCard key={c.id} category={c} hideDone={hideDone} editMode={editMode} onToggle={(item) => toggle.mutate(item)} />
+          <CategoryCard
+            key={c.id}
+            category={c}
+            hideDone={hideDone}
+            editMode={editMode}
+            collapsed={collapsed.has(c.id)}
+            onToggleCollapsed={() => toggleCollapsed(c.id)}
+            onToggle={(item) => toggle.mutate(item)}
+          />
         ))}
         <section className="rounded-lg border border-dashed border-line p-3.5" aria-label="Add a topic">
           <h2 className="mb-2 font-bold text-muted">Add a topic</h2>
